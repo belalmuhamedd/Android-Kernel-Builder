@@ -1,7 +1,7 @@
 [  {
     "kernelSource": {
       "name": "daisy",
-      "repo": "https://github.com/TheGamerKing561/android_kernel_xiaomi_msm8953",
+      "repo": "https://github.com/belalmuhamedd/android_kernel_xiaomi_msm8953.git",
       "branch": "lineage-22.2-ksu",
       "device": "daisy-perf"
     },
@@ -14,7 +14,7 @@
       },
       {
         "repo": "https://gitlab.com/ThankYouMario/android_prebuilts_clang-standalone/",
-        "branch": "11",
+        "branch": "13",
         "name": "clang"
       }
     ],
