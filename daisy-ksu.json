@@ -2,7 +2,7 @@
     "kernelSource": {
       "name": "daisy",
       "repo": "https://github.com/belalmuhamedd/android_kernel_xiaomi_msm8953.git",
-      "branch": "lineage-22.2-ksu",
+      "branch": "lineage-22.2",
       "device": "daisy-perf"
     },
     "withKernelSU": false,
