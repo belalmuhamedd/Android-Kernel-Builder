@@ -1,11 +1,13 @@
-[  {
+[
+  {
     "kernelSource": {
-      "name": "daisy",
-      "repo": "https://github.com/TheGamerKing561/android_kernel_xiaomi_msm8953",
+      "name": "miatoll",
+      "repo": "https://github.com/LineageOS/android_kernel_xiaomi_sm6250",
       "branch": "lineage-22.2",
-      "device": "daisy-perf"
+      "device": "miatoll",
+      "defconfig": "vendor/xiaomi/miatoll_defconfig"
     },
-    "withKernelSU": false,
+    "withKernelSU": true,
     "toolchains": [
       {
         "repo": "https://android.googlesource.com/platform/prebuilts/gas/linux-x86",
@@ -14,7 +16,7 @@
       },
       {
         "repo": "https://gitlab.com/ThankYouMario/android_prebuilts_clang-standalone/",
-        "branch": "11",
+        "branch": "18",
         "name": "clang"
       }
     ],
@@ -25,7 +27,11 @@
       "CROSS_COMPILE_COMPAT": "arm-linux-gnueabi-",
       "CLANG_TRIPLE": "aarch64-linux-gnu-",
       "AR": "",
-      "CC": "clang"
+      "CC": "clang",
+      "LD": "ld.lld",
+      "LLVM": "1",
+      "LLVM_IAS": "1",
+      "DISABLE_CLANG_LTO": true
     }
   }
 ]
