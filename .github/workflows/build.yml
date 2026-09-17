@@ -240,6 +240,8 @@ jobs:
         run: |
           echo "PATH Variable: $PATH"
           echo "Build args: ${args}"
+          ulimit -s unlimited
+          echo "Argument limit: $(getconf ARG_MAX)"
           
           if [[ "${{ github.actor }}" == "TheGamerKing561" && "${{ inputs.set_custom_build_identity }}" == "true" ]]; then
             export KBUILD_BUILD_USER="thegamerking"
