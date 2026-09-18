@@ -100,7 +100,7 @@ jobs:
         run: |
           git clone --recursive --branch $kernelBranch $kernelRepo $kernelName --depth=1
 
-      - name: "🩹 Fix miatoll device-tree includes"
+      - name: "🩹 Fix miatoll device-tree base includes"
         if: ${{ env.kernelName == 'miatoll' && env.kernelDevice == 'miatoll' }}
         working-directory: ./${{ env.kernelDir }}/${{ env.kernelName }}
         run: |
@@ -108,13 +108,7 @@ jobs:
           from pathlib import Path
 
           dts_dir = Path("arch/arm64/boot/dts/qcom")
-          include = '#include "cust-atoll.dtsi"\n'
-          base = dts_dir / "cust-atoll-ab.dts"
-          base_text = base.read_text()
-          if include not in base_text:
-              base_text = base_text.replace('#include "atoll-ab.dtsi"\n', '#include "atoll-ab.dtsi"\n' + include, 1)
-              base.write_text(base_text)
-
+          include = '#include "atoll-ab.dtsi"\n'
           for overlay_name in (
               "curtana-atoll-ab-idp-overlay.dts",
               "excalibur-atoll-ab-idp-overlay.dts",
@@ -122,7 +116,10 @@ jobs:
               "joyeuse-atoll-ab-idp-overlay.dts",
           ):
               overlay = dts_dir / overlay_name
-              overlay.write_text(overlay.read_text().replace(include, ""))
+              text = overlay.read_text()
+              if include not in text:
+                  text = text.replace('#include "cust-atoll.dtsi"\n', include + '#include "cust-atoll.dtsi"\n', 1)
+                  overlay.write_text(text)
           PY
 
       - name: "💫 Get toolchains"
