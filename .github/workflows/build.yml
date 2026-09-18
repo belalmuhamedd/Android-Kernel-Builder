@@ -115,7 +115,7 @@ jobs:
             if [ -n "$archive" ]; then
               mkdir -p "$name"
               curl -L --fail --retry 3 "$archive" -o "$name.tar.gz"
-              tar -xzf "$name.tar.gz" --strip-components=1 -C "$name"
+              tar -xzf "$name.tar.gz" -C "$name"
               rm -f "$name.tar.gz"
             else
               git clone --recursive --branch $branch $repo $name --depth=1
