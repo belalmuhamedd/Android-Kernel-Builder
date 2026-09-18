@@ -15,9 +15,10 @@
         "name": "gas"
       },
       {
-        "repo": "https://gitlab.com/ThankYouMario/android_prebuilts_clang-standalone/",
-        "branch": "18",
-        "name": "clang"
+        "repo": "https://github.com/userariii/AOSP-clang.git",
+        "branch": "master",
+        "name": "clang",
+        "archive": "https://github.com/userariii/AOSP-clang/releases/download/clang-r530567/clang-r530567.tar.gz"
       }
     ],
     "params": {
@@ -26,8 +27,17 @@
       "CROSS_COMPILE_ARM32": "arm-linux-gnueabi-",
       "CROSS_COMPILE_COMPAT": "arm-linux-gnueabi-",
       "CLANG_TRIPLE": "aarch64-linux-gnu-",
-      "AR": "",
       "CC": "clang",
+      "HOSTCC": "clang",
+      "HOSTCXX": "clang++",
+      "HOSTCFLAGS": "-fuse-ld=lld -Wno-unused-command-line-argument",
+      "AR": "llvm-ar",
+      "NM": "llvm-nm",
+      "OBJCOPY": "llvm-objcopy",
+      "OBJDUMP": "llvm-objdump",
+      "STRIP": "llvm-strip",
+      "READELF": "llvm-readelf",
+      "OBJSIZE": "llvm-size",
       "LD": "ld.lld",
       "LLVM": "1",
       "LLVM_IAS": "1",

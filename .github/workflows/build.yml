@@ -111,7 +111,15 @@ jobs:
             name=$(echo $toolchains | jq -r ".[$i].name")
             repo=$(echo $toolchains | jq -r ".[$i].repo")
             branch=$(echo $toolchains | jq -r ".[$i].branch")
-            git clone --recursive --branch $branch $repo $name --depth=1
+            archive=$(echo $toolchains | jq -r ".[$i].archive // empty")
+            if [ -n "$archive" ]; then
+              mkdir -p "$name"
+              curl -L --fail --retry 3 "$archive" -o "$name.tar.gz"
+              tar -xzf "$name.tar.gz" --strip-components=1 -C "$name"
+              rm -f "$name.tar.gz"
+            else
+              git clone --recursive --branch $branch $repo $name --depth=1
+            fi
             echo "$(pwd)/$name/" >> $GITHUB_PATH
             echo "$(pwd)/$name/bin" >> $GITHUB_PATH
           done
@@ -131,8 +139,17 @@ jobs:
           CROSS_COMPILE_COMPAT=$(echo $params | jq -r ".CROSS_COMPILE_COMPAT")
           CROSS_COMPILE_ARM32=$(echo $params | jq -r ".CROSS_COMPILE_ARM32")
           CLANG_TRIPLE=$(echo $params | jq -r ".CLANG_TRIPLE")
-          AR=$(echo $params | jq -r ".AR")
           CC=$(echo $params | jq -r ".CC")
+          HOSTCC=$(echo $params | jq -r ".HOSTCC")
+          HOSTCXX=$(echo $params | jq -r ".HOSTCXX")
+          HOSTCFLAGS=$(echo $params | jq -r ".HOSTCFLAGS")
+          AR=$(echo $params | jq -r ".AR")
+          NM=$(echo $params | jq -r ".NM")
+          OBJCOPY=$(echo $params | jq -r ".OBJCOPY")
+          OBJDUMP=$(echo $params | jq -r ".OBJDUMP")
+          STRIP=$(echo $params | jq -r ".STRIP")
+          READELF=$(echo $params | jq -r ".READELF")
+          OBJSIZE=$(echo $params | jq -r ".OBJSIZE")
           LD=$(echo $params | jq -r ".LD")
           LLVM=$(echo $params | jq -r ".LLVM")
           LLVM_IAS=$(echo $params | jq -r ".LLVM_IAS")
@@ -162,6 +179,36 @@ jobs:
           fi
           if [ -n "$CC" ]; then
             args="$args CC=$CC"
+          fi
+          if [ -n "$HOSTCC" ] && [ "$HOSTCC" != "null" ]; then
+            args="$args HOSTCC=$HOSTCC"
+          fi
+          if [ -n "$HOSTCXX" ] && [ "$HOSTCXX" != "null" ]; then
+            args="$args HOSTCXX=$HOSTCXX"
+          fi
+          if [ -n "$HOSTCFLAGS" ] && [ "$HOSTCFLAGS" != "null" ]; then
+            args="$args HOSTCFLAGS=$HOSTCFLAGS"
+          fi
+          if [ -n "$AR" ] && [ "$AR" != "null" ]; then
+            args="$args AR=$AR"
+          fi
+          if [ -n "$NM" ] && [ "$NM" != "null" ]; then
+            args="$args NM=$NM"
+          fi
+          if [ -n "$OBJCOPY" ] && [ "$OBJCOPY" != "null" ]; then
+            args="$args OBJCOPY=$OBJCOPY"
+          fi
+          if [ -n "$OBJDUMP" ] && [ "$OBJDUMP" != "null" ]; then
+            args="$args OBJDUMP=$OBJDUMP"
+          fi
+          if [ -n "$STRIP" ] && [ "$STRIP" != "null" ]; then
+            args="$args STRIP=$STRIP"
+          fi
+          if [ -n "$READELF" ] && [ "$READELF" != "null" ]; then
+            args="$args READELF=$READELF"
+          fi
+          if [ -n "$OBJSIZE" ] && [ "$OBJSIZE" != "null" ]; then
+            args="$args OBJSIZE=$OBJSIZE"
           fi
           # Clang ThinLTO requires lld; older cross gold linkers reject its cache flag.
           if [ -n "$LD" ] && [ "$LD" != "null" ]; then
