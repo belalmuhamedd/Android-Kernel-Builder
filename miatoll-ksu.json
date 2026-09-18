@@ -30,7 +30,7 @@
       "CC": "clang",
       "HOSTCC": "clang",
       "HOSTCXX": "clang++",
-      "HOSTCFLAGS": "-fuse-ld=lld -Wno-unused-command-line-argument",
+      "HOSTLDFLAGS": "-fuse-ld=lld",
       "AR": "llvm-ar",
       "NM": "llvm-nm",
       "OBJCOPY": "llvm-objcopy",
