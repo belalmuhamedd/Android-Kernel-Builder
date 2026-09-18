@@ -40,8 +40,7 @@
       "OBJSIZE": "llvm-size",
       "LD": "ld.lld",
       "LLVM": "1",
-      "LLVM_IAS": "1",
-      "DISABLE_CLANG_LTO": true
+      "LLVM_IAS": "1"
     }
   }
 ]
