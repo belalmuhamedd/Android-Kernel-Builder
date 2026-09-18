@@ -9,7 +9,7 @@ on:
       config_file:
         description: "Path to config JSON file"
         required: true
-        default: "miatoll-ksu.json"
+        default: "repos.json"
       enable_KernelSU:
         description: "Enable KernelSU"
         required: false
@@ -100,31 +100,6 @@ jobs:
         run: |
           git clone --recursive --branch $kernelBranch $kernelRepo $kernelName --depth=1
 
-      - name: "🩹 Fix miatoll device-tree includes"
-        if: ${{ env.kernelName == 'miatoll' && env.kernelDevice == 'miatoll' }}
-        working-directory: ./${{ env.kernelDir }}/${{ env.kernelName }}
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-
-          dts_dir = Path("arch/arm64/boot/dts/qcom")
-          include = '#include "cust-atoll.dtsi"\n'
-          base = dts_dir / "cust-atoll-ab.dts"
-          base_text = base.read_text()
-          if include not in base_text:
-              base_text = base_text.replace('#include "atoll-ab.dtsi"\n', '#include "atoll-ab.dtsi"\n' + include, 1)
-              base.write_text(base_text)
-
-          for overlay_name in (
-              "curtana-atoll-ab-idp-overlay.dts",
-              "excalibur-atoll-ab-idp-overlay.dts",
-              "gram-atoll-ab-idp-overlay.dts",
-              "joyeuse-atoll-ab-idp-overlay.dts",
-          ):
-              overlay = dts_dir / overlay_name
-              overlay.write_text(overlay.read_text().replace(include, ""))
-          PY
-
       - name: "💫 Get toolchains"
         working-directory: ./${{ env.kernelDir }}
         env:
@@ -140,7 +115,7 @@ jobs:
             if [ -n "$archive" ]; then
               mkdir -p "$name"
               curl -L --fail --retry 3 "$archive" -o "$name.tar.gz"
-              tar -xzf "$name.tar.gz" -C "$name"
+              tar -xzf "$name.tar.gz" --strip-components=1 -C "$name"
               rm -f "$name.tar.gz"
             else
               git clone --recursive --branch $branch $repo $name --depth=1
@@ -168,7 +143,6 @@ jobs:
           HOSTCC=$(echo $params | jq -r ".HOSTCC")
           HOSTCXX=$(echo $params | jq -r ".HOSTCXX")
           HOSTCFLAGS=$(echo $params | jq -r ".HOSTCFLAGS")
-          HOSTLDFLAGS=$(echo $params | jq -r ".HOSTLDFLAGS")
           AR=$(echo $params | jq -r ".AR")
           NM=$(echo $params | jq -r ".NM")
           OBJCOPY=$(echo $params | jq -r ".OBJCOPY")
@@ -179,6 +153,7 @@ jobs:
           LD=$(echo $params | jq -r ".LD")
           LLVM=$(echo $params | jq -r ".LLVM")
           LLVM_IAS=$(echo $params | jq -r ".LLVM_IAS")
+          DISABLE_CLANG_LTO=$(echo $params | jq -r ".DISABLE_CLANG_LTO")
 
           echo "ARCH=$ARCH" >> $GITHUB_ENV
 
@@ -214,9 +189,6 @@ jobs:
           if [ -n "$HOSTCFLAGS" ] && [ "$HOSTCFLAGS" != "null" ]; then
             args="$args HOSTCFLAGS=$HOSTCFLAGS"
           fi
-          if [ -n "$HOSTLDFLAGS" ] && [ "$HOSTLDFLAGS" != "null" ]; then
-            args="$args HOSTLDFLAGS=$HOSTLDFLAGS"
-          fi
           if [ -n "$AR" ] && [ "$AR" != "null" ]; then
             args="$args AR=$AR"
           fi
@@ -238,6 +210,7 @@ jobs:
           if [ -n "$OBJSIZE" ] && [ "$OBJSIZE" != "null" ]; then
             args="$args OBJSIZE=$OBJSIZE"
           fi
+          # Clang ThinLTO requires lld; older cross gold linkers reject its cache flag.
           if [ -n "$LD" ] && [ "$LD" != "null" ]; then
             requested_ld="$LD"
             LD=$(command -v "$requested_ld" || true)
@@ -252,6 +225,9 @@ jobs:
           fi
           if [ -n "$LLVM_IAS" ] && [ "$LLVM_IAS" != "null" ]; then
             args="$args LLVM_IAS=$LLVM_IAS"
+          fi
+          if [ "$DISABLE_CLANG_LTO" = "true" ]; then
+            args="$args CONFIG_LTO_CLANG=n CONFIG_LTO_NONE=y"
           fi
           echo "args=$args" >> $GITHUB_OUTPUT
           echo "Build args: $args"
@@ -290,6 +266,18 @@ jobs:
         run: |
           echo "PATH Variable: $PATH"
           make ${args} ${{ env.DEFCONFIG_NAME }}
+          if [[ "${args}" == *"CONFIG_LTO_CLANG=n"* ]]; then
+            KCONFIG_OUTPUT=$(printf '%s\n' "$args" | sed -n 's/.* O=\([^ ]*\).*/\1/p')
+            KCONFIG_FILE="${KCONFIG_OUTPUT}/.config"
+            if [ -f "$KCONFIG_FILE" ]; then
+              scripts/config --file "$KCONFIG_FILE" \
+                --disable LTO_CLANG --enable LTO_NONE
+              make ${args} olddefconfig
+            else
+              echo "Kconfig file not found at $KCONFIG_FILE"
+              exit 1
+            fi
+          fi
 
       - name: "🎶 Build kernel"
         if: github.event.inputs.enable_terminal == 'false'
@@ -344,9 +332,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dtb(${{ env.kernelDevice }}-${{ env.kernelName }}-${{ env.kernelBranch }})
-          path: |
-            ./${{ env.kernelDir }}/${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/dtb*
-            ./${{ env.kernelDir }}/${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/dts/**/*.dtb
+          path: ./${{ env.kernelDir }}/${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/dtb*
+                ./${{ env.kernelDir }}/${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/dts/**/*.dtb
           if-no-files-found: ignore
 
       - name: "❤️ Upload dtbo.img"
