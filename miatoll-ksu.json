@@ -30,7 +30,7 @@
       "CC": "clang",
       "HOSTCC": "clang",
       "HOSTCXX": "clang++",
-      "HOSTCFLAGS": "-fuse-ld=lld -Wno-unused-command-line-argument",
+      "HOSTLDFLAGS": "-fuse-ld=lld",
       "AR": "llvm-ar",
       "NM": "llvm-nm",
       "OBJCOPY": "llvm-objcopy",
@@ -40,8 +40,7 @@
       "OBJSIZE": "llvm-size",
       "LD": "ld.lld",
       "LLVM": "1",
-      "LLVM_IAS": "1",
-      "DISABLE_CLANG_LTO": true
+      "LLVM_IAS": "1"
     }
   }
 ]
