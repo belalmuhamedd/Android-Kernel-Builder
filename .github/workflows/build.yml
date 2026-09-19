@@ -13,7 +13,7 @@ on:
       enable_KernelSU:
         description: "Enable KernelSU"
         required: false
-        default: false
+        default: true
         type: boolean
       enable_terminal:
          description: "Start terminal before build"
@@ -282,7 +282,7 @@ jobs:
             export KBUILD_BUILD_HOST="github-runner"
             echo "Using custom build identity."
           fi
-          make ${args}
+          make ${args} Image.gz-dtb dtbs
 
       - name: Install SSH server
         if: github.event.inputs.enable_terminal == 'true'
