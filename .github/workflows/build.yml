@@ -245,16 +245,7 @@ jobs:
         working-directory: ./${{ env.kernelDir }}/${{ env.kernelName }}
         if: ${{ env.withKernelSU == 'true' }}
         run: |
-          if [ -d "./KernelSU" ]; then
-            rm -rf "./KernelSU"
-          fi
-          if [ -d "./drivers/kernelsu" ]; then
-            rm -rf "./drivers/kernelsu"
-          fi
-
           curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/next/kernel/setup.sh" | bash -s legacy
-
-          echo -e "\nCONFIG_KSU_TAMPER_SYSCALL_TABLE=y" >> ./arch/${{ env.ARCH }}/configs/${{ env.DEFCONFIG_NAME }}
 
           cat ./arch/${{ env.ARCH }}/configs/${{ env.DEFCONFIG_NAME }}
 
@@ -276,12 +267,6 @@ jobs:
           echo "Build args: ${args}"
           ulimit -s unlimited
           echo "Argument limit: $(getconf ARG_MAX)"
-          
-          if [[ "${{ github.actor }}" == "TheGamerKing561" && "${{ inputs.set_custom_build_identity }}" == "true" ]]; then
-            export KBUILD_BUILD_USER="thegamerking"
-            export KBUILD_BUILD_HOST="github-runner"
-            echo "Using custom build identity."
-          fi
           make ${args} Image.gz-dtb dtbs
 
       - name: Install SSH server
