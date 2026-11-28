@@ -245,7 +245,7 @@ jobs:
         working-directory: ./${{ env.kernelDir }}/${{ env.kernelName }}
         if: ${{ env.withKernelSU == 'true' }}
         run: |
-          curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/next/kernel/setup.sh" | bash -s legacy
+          curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/next/kernel/setup.sh" | bash -s stable
 
           cat ./arch/${{ env.ARCH }}/configs/${{ env.DEFCONFIG_NAME }}
 
